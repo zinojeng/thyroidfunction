@@ -114,13 +114,9 @@ class RAGEngine:
         """創建甲狀腺診斷指南文件"""
         guidelines = [
             Document(
-                page_content="""
-                甲狀腺功能異常的診斷與鑑別
-                
-                1. 甲狀腺功能亢進 (Hyperthyroidism)
-                診斷標準：
-                - TSH < 0.4 μIU/mL (降低)
-                - Free T4 > 1.8 ng/dL 和/或 Free T3 > 4.2 pg/mL (升高)
-                
-                常見原因：
-                - Graves' disease（瀰漫性毒性甲狀腺 
+                page_content="甲狀腺功能異常的診斷與鑑別\n\n1. 甲狀腺功能亢進 (Hyperthyroidism)\n診斷標準：\n- TSH < 0.4 μIU/mL (降低)\n- Free T4 > 1.8 ng/dL 和/或 Free T3 > 4.2 pg/mL (升高)\n\n常見原因：\n- Graves' disease（瀰漫性毒性甲狀腺腫）",
+                metadata={"type": "clinical_guideline", "condition": "hyperthyroidism"}
+            )
+        ]
+        return guidelines
+    
