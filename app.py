@@ -8,6 +8,7 @@ from typing import Dict, List
 import plotly.graph_objects as go
 from src.rag_engine import RAGEngine
 from src.literature_based_analyzer import LiteratureBasedAnalyzer
+from src.thyroid_analyzer import ThyroidAnalyzer
 from config import Config
 import os
 
@@ -24,7 +25,8 @@ st.set_page_config(
 def initialize_engines():
     """初始化 RAG 引擎和分析器"""
     rag_engine = RAGEngine()
-    return rag_engine
+    analyzer = ThyroidAnalyzer()
+    return rag_engine, analyzer
 
 def main():
     st.title("🦋 " + Config.APP_NAME)
@@ -32,7 +34,7 @@ def main():
     st.info("本系統基於上傳的醫學文獻（Markdown 格式）進行判讀，確保診斷建議有據可查")
     
     # 初始化引擎
-    rag_engine = initialize_engines()
+    rag_engine, analyzer = initialize_engines()
     
     # 側邊欄
     with st.sidebar:
