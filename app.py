@@ -48,11 +48,11 @@ def main():
         openai_api_key = st.text_input("OpenAI API Key", type="password", help="輸入您的OpenAI API Key")
         openai_model = st.selectbox(
             "選擇模型",
-            ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"],
+            ["o4", "o4-mini", "o3"],
             format_func=lambda x: {
-                "gpt-4o": "o4 (GPT-4o)",
-                "gpt-4o-mini": "o4-mini (GPT-4o Mini)",
-                "gpt-3.5-turbo": "o3 (GPT-3.5 Turbo)"
+                "o4": "o4 (GPT-4o)",
+                "o4-mini": "o4-mini (GPT-4o Mini)",
+                "o3": "o3 (GPT-3.5 Turbo)"
             }.get(x, x),
             help="選擇要使用的OpenAI模型"
         )

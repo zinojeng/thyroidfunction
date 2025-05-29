@@ -12,7 +12,7 @@ class Config:
     
     # 模型設定
     EMBEDDING_MODEL = "text-embedding-ada-002"
-    LLM_MODEL = "gpt-4o-mini"
+    LLM_MODEL = "o4-mini"
     
     # 向量資料庫設定
     VECTOR_DB_PATH = "./data/vector_db"
