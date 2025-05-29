@@ -12,7 +12,7 @@ class Config:
     
     # 模型設定
     EMBEDDING_MODEL = "text-embedding-ada-002"
-    LLM_MODEL = "gpt-4-turbo-preview"
+    LLM_MODEL = "gpt-4o-mini"
     
     # 向量資料庫設定
     VECTOR_DB_PATH = "./data/vector_db"
@@ -35,4 +35,4 @@ class Config:
     # 應用程式設定
     APP_NAME = "甲狀腺功能智慧判讀系統"
     APP_VERSION = "1.0.0"
-    APP_DESCRIPTION = "基於醫學文獻的甲狀腺功能檢驗判讀系統" 
+    APP_DESCRIPTION = "基於醫學文獻的甲狀腺功能檢驗判讀系統"
