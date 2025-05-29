@@ -2,7 +2,7 @@
 甲狀腺功能分析器
 提供檢驗結果解讀和診斷建議
 """
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
 import pandas as pd
@@ -41,8 +41,8 @@ class ThyroidAnalyzer:
         self.normal_ranges = Config.NORMAL_RANGES
     
     def analyze(self, lab_data: Dict[str, float], 
-                symptoms: List[str] = None,
-                medical_history: Dict[str, Any] = None) -> DiagnosisResult:
+                symptoms: List[str] = [],
+                medical_history: Dict[str, Any] = {}) -> DiagnosisResult:
         """
         分析甲狀腺功能
         
@@ -164,8 +164,8 @@ class ThyroidAnalyzer:
         self, 
         lab_results: Dict[str, LabResult],
         thyroid_status: ThyroidStatus,
-        symptoms: List[str] = None,
-        medical_history: Dict[str, Any] = None
+        symptoms: List[str] = [],
+        medical_history: Dict[str, Any] = {}
     ) -> List[Tuple[str, float]]:
         """生成鑑別診斷"""
         differential = []
@@ -206,7 +206,7 @@ class ThyroidAnalyzer:
         self,
         thyroid_status: ThyroidStatus,
         lab_results: Dict[str, LabResult],
-        symptoms: List[str] = None
+        symptoms: List[str] = []
     ) -> List[str]:
         """生成建議事項"""
         recommendations = []
@@ -275,7 +275,7 @@ class ThyroidAnalyzer:
     def _calculate_confidence(
         self,
         lab_results: Dict[str, LabResult],
-        symptoms: List[str] = None
+        symptoms: List[str] = []
     ) -> float:
         """計算診斷信心度"""
         confidence = 0.5
@@ -334,4 +334,4 @@ class ThyroidAnalyzer:
             for test in diagnosis_result.additional_tests:
                 report += f"- {test}\n"
         
-        return report 
+        return report

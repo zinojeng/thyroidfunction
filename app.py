@@ -24,9 +24,10 @@ st.set_page_config(
 @st.cache_resource
 def initialize_engines():
     """初始化 RAG 引擎和分析器"""
-    rag_engine = RAGEngine()
+    # 暫時使用簡化版的初始化，避免 ChromaDB 相容性問題
+    # rag_engine = RAGEngine()
     analyzer = ThyroidAnalyzer()
-    return rag_engine, analyzer
+    return None, analyzer
 
 def main():
     st.title("🦋 " + Config.APP_NAME)
@@ -42,15 +43,64 @@ def main():
         
         # 基本檢驗項目
         st.subheader("基本檢驗")
-        tsh = st.number_input("TSH (μIU/mL)", min_value=0.0, max_value=100.0, step=0.01)
-        free_t4 = st.number_input("Free T4 (ng/dL)", min_value=0.0, max_value=10.0, step=0.01)
-        free_t3 = st.number_input("Free T3 (pg/mL)", min_value=0.0, max_value=20.0, step=0.01)
+        col_tsh, col_tsh_ref = st.columns([3, 1])
+        with col_tsh:
+            tsh = st.number_input("TSH (μIU/mL) *必填", min_value=0.0, max_value=100.0, step=0.01)
+        with col_tsh_ref:
+            tsh_range = Config.NORMAL_RANGES.get("TSH", {})
+            if tsh_range:
+                st.caption(f"參考範圍: {tsh_range.get('min', 0)}-{tsh_range.get('max', 0)} {tsh_range.get('unit', '')}")
+        
+        col_t4, col_t4_ref = st.columns([3, 1])
+        with col_t4:
+            free_t4 = st.number_input("Free T4 (ng/dL) *必填", min_value=0.0, max_value=10.0, step=0.01)
+        with col_t4_ref:
+            t4_range = Config.NORMAL_RANGES.get("Free_T4", {})
+            if t4_range:
+                st.caption(f"參考範圍: {t4_range.get('min', 0)}-{t4_range.get('max', 0)} {t4_range.get('unit', '')}")
+        
+        # Free T3 (選填)
+        include_t3 = st.checkbox("包含 Free T3 檢測值")
+        free_t3 = 0.0
+        if include_t3:
+            col_t3, col_t3_ref = st.columns([3, 1])
+            with col_t3:
+                free_t3 = st.number_input("Free T3 (pg/mL)", min_value=0.0, max_value=20.0, step=0.01)
+            with col_t3_ref:
+                t3_range = Config.NORMAL_RANGES.get("Free_T3", {})
+                if t3_range:
+                    st.caption(f"參考範圍: {t3_range.get('min', 0)}-{t3_range.get('max', 0)} {t3_range.get('unit', '')}")
         
         # 抗體檢驗
         st.subheader("抗體檢驗（選填）")
-        anti_tpo = st.number_input("Anti-TPO (IU/mL)", min_value=0.0, max_value=1000.0, step=0.1)
-        anti_tg = st.number_input("Anti-Tg (IU/mL)", min_value=0.0, max_value=1000.0, step=0.1)
-        trab = st.number_input("TSH受體抗體 (IU/L)", min_value=0.0, max_value=50.0, step=0.01)
+        include_antibodies = st.checkbox("包含抗體檢測值")
+        anti_tpo = 0.0
+        anti_tg = 0.0
+        trab = 0.0
+        if include_antibodies:
+            col_tpo, col_tpo_ref = st.columns([3, 1])
+            with col_tpo:
+                anti_tpo = st.number_input("Anti-TPO (IU/mL)", min_value=0.0, max_value=1000.0, step=0.1)
+            with col_tpo_ref:
+                tpo_range = Config.NORMAL_RANGES.get("Anti_TPO", {})
+                if tpo_range:
+                    st.caption(f"參考範圍: <{tpo_range.get('max', 0)} {tpo_range.get('unit', '')}")
+            
+            col_tg, col_tg_ref = st.columns([3, 1])
+            with col_tg:
+                anti_tg = st.number_input("Anti-Tg (IU/mL)", min_value=0.0, max_value=1000.0, step=0.1)
+            with col_tg_ref:
+                tg_range = Config.NORMAL_RANGES.get("Anti_Tg", {})
+                if tg_range:
+                    st.caption(f"參考範圍: <{tg_range.get('max', 0)} {tg_range.get('unit', '')}")
+            
+            col_trab, col_trab_ref = st.columns([3, 1])
+            with col_trab:
+                trab = st.number_input("TSH受體抗體 (IU/L)", min_value=0.0, max_value=50.0, step=0.01)
+            with col_trab_ref:
+                trab_range = Config.NORMAL_RANGES.get("TSH_receptor_Ab", {})
+                if trab_range:
+                    st.caption(f"參考範圍: <{trab_range.get('max', 0)} {trab_range.get('unit', '')}")
         
         # 症狀選擇
         st.subheader("臨床症狀（選填）")
@@ -100,12 +150,29 @@ def main():
             # 使用分析器進行診斷
             diagnosis_result = analyzer.analyze(
                 lab_data=lab_data,
-                symptoms=symptoms if symptoms else None
+                symptoms=symptoms if symptoms else []
             )
             
-            # 使用 RAG 獲取額外建議
-            question = f"患者檢驗結果顯示{diagnosis_result.thyroid_status.value}，請提供詳細的診斷和治療建議。"
-            rag_response = rag_engine.query(question, lab_data)
+            # 由於RAG引擎暫時禁用，提供基本診斷建議
+            rag_response = {
+                "diagnosis": f"""
+## {diagnosis_result.thyroid_status.value}診斷建議
+
+根據檢驗結果，患者被診斷為**{diagnosis_result.thyroid_status.value}**。
+
+### 一般建議
+- 定期追蹤檢查甲狀腺功能
+- 遵醫囑規律服藥
+- 均衡飲食，保持適度運動
+- 避免壓力過大
+
+### 治療方向
+{', '.join(diagnosis_result.recommendations)}
+
+### 注意事項
+請記住這只是初步建議，具體治療方案請遵循醫師指導。
+                """
+            }
         
         # 顯示結果
         col1, col2 = st.columns(2)
@@ -177,12 +244,8 @@ def main():
                     with open(file_path, "wb") as f:
                         f.write(uploaded_file.getbuffer())
                     
-                    # 加入 RAG 系統
-                    result = rag_engine.add_document(
-                        file_path, 
-                        doc_type="pdf" if uploaded_file.name.endswith('.pdf') else "txt"
-                    )
-                    st.success(result)
+                    # 由於RAG系統暫時禁用
+                    st.success("文件已上傳，但RAG系統暫時禁用。")
 
 def create_lab_chart(lab_data: Dict[str, float], normal_ranges: Dict) -> go.Figure:
     """創建檢驗結果視覺化圖表"""
@@ -262,4 +325,4 @@ def create_lab_dataframe(lab_data: Dict[str, float], analyzer: ThyroidAnalyzer) 
     return df
 
 if __name__ == "__main__":
-    main() 
+    main()
