@@ -21,9 +21,17 @@ st.set_page_config(
 )
 
 # 初始化
-@st.cache_resource
-def initialize_engines():
+@st.cache_resource(hash_funcs={"_thread.lock": lambda _: None})
+def initialize_engines(api_key=None, model=None):
     """初始化 RAG 引擎和分析器"""
+    # 如果有提供API key，設置環境變量
+    if api_key:
+        os.environ["OPENAI_API_KEY"] = api_key
+    
+    # 如果有提供模型，臨時覆蓋Config的模型設置
+    if model:
+        Config.LLM_MODEL = model
+    
     # 暫時使用簡化版的初始化，避免 ChromaDB 相容性問題
     # rag_engine = RAGEngine()
     analyzer = ThyroidAnalyzer()
@@ -34,8 +42,23 @@ def main():
     st.markdown(f"### {Config.APP_DESCRIPTION}")
     st.info("本系統基於上傳的醫學文獻（Markdown 格式）進行判讀，確保診斷建議有據可查")
     
+    # OpenAI設定
+    with st.sidebar:
+        st.header("OpenAI設定")
+        openai_api_key = st.text_input("OpenAI API Key", type="password", help="輸入您的OpenAI API Key")
+        openai_model = st.selectbox(
+            "選擇模型",
+            ["gpt-4-turbo-preview", "gpt-4o-mini", "gpt-3.5-turbo"],
+            format_func=lambda x: {
+                "gpt-4-turbo-preview": "GPT-4o",
+                "gpt-4o-mini": "GPT-4o Mini",
+                "gpt-3.5-turbo": "GPT-3.5 Turbo"
+            }.get(x, x),
+            help="選擇要使用的OpenAI模型"
+        )
+    
     # 初始化引擎
-    rag_engine, analyzer = initialize_engines()
+    rag_engine, analyzer = initialize_engines(api_key=openai_api_key, model=openai_model)
     
     # 側邊欄
     with st.sidebar:
